@@ -1,0 +1,6 @@
+{
+  "name": "stepper",
+  "version": "1.0.1",
+  "description": "Transition stepping function",
+  "main": "stepper.js"
+}
