@@ -11,9 +11,10 @@ var Stepper = function() {
 }
 
 Stepper.prototype = {
-    run: function(duration, bezierCurve, stepCb, doneCb) {
+    run: function(duration, bezierCurve, stepCb, doneCb, forceStopCb) {
         this.stepCallback = stepCb;
-        this.doneCallback = doneCb
+        this.doneCallback = doneCb;
+        this.forceStopCallback = forceStopCb;
 
         this.easing = this.getEasing(bezierCurve);
 
@@ -54,14 +55,6 @@ Stepper.prototype = {
 
 
         this.step();
-    },
-
-    /**
-     * Pārtraucam stepping
-     */
-    stop: function() {
-        cancelAnimationFrame(this.requestId);
-        this.done();
     },
 
     /**
@@ -122,9 +115,30 @@ Stepper.prototype = {
         this.progress = 0;
     },
 
+    /**
+     * Pārtraucam stepping
+     */
+    stop: function() {
+        cancelAnimationFrame(this.requestId);
+        this.done();
+    },
+
+    /**
+     * Pārtraucam animāciju un neizpildām done callback
+     */
+    forceStop: function() {
+        cancelAnimationFrame(this.requestId);
+        this.inProgress = false;
+        if (this.forceStopCallback) {
+            this.forceStopCallback();
+        }
+    },
+
     done: function() {
         this.inProgress = false;
-        this.doneCallback();
+        if (this.doneCallback) {
+            this.doneCallback();
+        }
     },
 
     step: function() {
