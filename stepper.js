@@ -11,6 +11,11 @@ var Stepper = function(config) {
     this.current = 0;
     this.requestId = 0;
     this.inProgress = false;
+    /**
+     * Vērtība, kuru transformēt atbilstoši progress vērtībai
+     * @param object object with props: from, to
+     */
+    this.value = undefined;
 
     this.config = config;
 
@@ -21,6 +26,9 @@ Stepper.prototype = {
     setConfig: function(overrideConfig) {
         this.duration = this.getConfig('duration', overrideConfig);
         this.easing = this.getConfig('bezierCurve', overrideConfig);
+        this.value = this.getConfig('value', overrideConfig);
+        
+
         this.stepCallback = this.getConfig('onStep', overrideConfig);
         this.doneCallback = this.getConfig('onDone', overrideConfig);
         this.forceStopCallback = this.getConfig('onForceStop', overrideConfig);
@@ -158,14 +166,14 @@ Stepper.prototype = {
 
         if (this.current < this.startTime + this.duration) {
 
-            this.stepCallback(this.progress);
+            this.runStepCallback(this.progress);
 
             this.requestId = requestAnimationFrame(function(){
                 mthis.step()
             });
         }
         else {
-            this.stepCallback(1);
+            this.runStepCallback(1);
 
             this.done();
         }
@@ -181,6 +189,20 @@ Stepper.prototype = {
         this.progress = this.easing.get(delta / this.duration);
 
         //this.progress = Math.round(this.progress*this.precision)/this.precision;
+    },
+
+    runStepCallback: function(progress) {
+        // Ja ir jāaprēķina vērtība atkarībā no progress
+        if (this.value) {
+            this.stepCallback(progress, this.calcValueFromProgress(progress, this.value.from, this.value.to))
+        }
+        else {
+            this.stepCallback(progress)
+        }
+    },
+
+    calcValueFromProgress: function(progress, from, to) {
+        return from + ((to - from) * progress);
     },
 
     getEasing: function(bezierCurve) {
@@ -209,6 +231,12 @@ Stepper.prototype = {
             case 'onDone':
             case 'onForceStop':
                 r = typeof r == 'function' ? r : function(){}
+                break;
+            case 'value':
+                if (!(r && typeof r == 'object' && typeof r['from'] != 'unefined' && r['to'] != 'undefined')) {
+                    r = undefined;
+                }
+                break;
         }
         
         return r;
