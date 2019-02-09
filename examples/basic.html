@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en-EN" prefix="og: http://ogp.me/ns#">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+    <style>
+    html,
+    body {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+    }
+    .doc {
+        max-width: 800px;
+        padding: 20px;
+        margin: 0 auto;
+    }
+    button {
+        padding: 7px 40px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    .stage {
+        margin-top: 40px;
+    }
+    .block {
+        width: 40px;
+        height: 40px;
+        background: blue;
+    }
+    .fields {
+        margin-bottom: 14px;
+    }
+    .fields>div {
+        margin-bottom: 4px;
+    }
+    </style>
+</head>
+<body>
+
+    <section class="doc">
+        <div class="fields">
+            <div>
+                <label>Bezier curve</label>
+                <input type="text" name="curve" value="0.68, -0.55, 0.265, 1.55" />
+                <br /><a target="_blank" href="https://easings.net/">See easing examples here</a>
+            </div>
+            <div>
+                <label>Duration, ms</label>
+                <input type="text" name="duration" value="200" />
+            </div>
+            <div>
+                <button name="runform">Run From</button> <input type="text" name="from" value="0.5" /><span>From 0 to 1, decimal</span>
+            </div>
+        </div>
+
+        <button name="run">Run</button> <span class="progress"></span> <span class="status"></span>
+
+        <div class="stage">
+            <div class="block"></div>
+        </div>
+
+    </section>
+
+    <script type="text/javascript" src="../build/stepper.min.js"></script>
+    <script>
+
+        function getCurve() {
+            var p = document.querySelector('[name=curve]').value.split(',').map(v => v.trim());
+            return p;
+        }
+        function getDuration() {
+            return document.querySelector('[name=duration]').value
+        }
+        var step = new webit.stepper({
+            duration: 200,
+            onDone: function() {
+                console.timeEnd('run');
+                document.querySelector('.status').innerHTML = 'Done in '+iterations+' steps '+(new Date() - startTime)+' ms';
+            },
+            onStep: function(progress){
+
+                iterations++;
+
+                document.querySelector('.progress').innerHTML = progress;
+
+                el.style.transform = 'translate('+(300*progress)+'px,0)'
+            }
+        })
+
+        var el = document.querySelector('.block');
+        var iterations, startTime;
+
+        document.querySelector('[name=run]').addEventListener('click', function(ev){
+            ev.preventDefault();
+
+            iterations = 0;
+            document.querySelector('.status').innerHTML = '';
+            document.querySelector('.progress').innerHTML = '';
+
+            console.time('run');
+            startTime = new Date();
+
+            step.run({
+                duration: getDuration(),
+                bezierCurve: getCurve()
+            });
+        })
+
+        document.querySelector('[name=runform]').addEventListener('click', function(ev){
+            ev.preventDefault();
+
+            iterations = 0;
+            document.querySelector('.status').innerHTML = '';
+            document.querySelector('.progress').innerHTML = '';
+
+            console.time('run');
+            startTime = new Date();
+
+            step.runFrom(
+                document.querySelector('[name=from]').value,
+                {
+                    duration: getDuration(),
+                    bezierCurve: getCurve()
+                }
+            );
+        })
+    </script>
+</body>
+</html>
