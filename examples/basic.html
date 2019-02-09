@@ -50,7 +50,7 @@
                 <input type="text" name="duration" value="200" />
             </div>
             <div>
-                <button name="runform">Run From</button> <input type="text" name="from" value="0.5" /><span>From 0 to 1, decimal</span>
+                <button name="runform">Run From</button> <input type="text" name="from" value="0.5" /><span>From 0 to 1 (decimal)</span>
             </div>
         </div>
 
@@ -74,17 +74,23 @@
         }
         var step = new webit.stepper({
             duration: 200,
+            value: {
+                from: 0,
+                to: 300
+            },
             onDone: function() {
                 console.timeEnd('run');
                 document.querySelector('.status').innerHTML = 'Done in '+iterations+' steps '+(new Date() - startTime)+' ms';
             },
-            onStep: function(progress){
+            onStep: function(progress, value){
 
                 iterations++;
 
                 document.querySelector('.progress').innerHTML = progress;
 
-                el.style.transform = 'translate('+(300*progress)+'px,0)'
+                console.log('value', value);
+
+                el.style.transform = 'translate('+value+'px,0)'
             }
         })
 
